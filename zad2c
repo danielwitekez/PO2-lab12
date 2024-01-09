@@ -1,0 +1,63 @@
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.concurrent.*;
+
+class Autor implements Runnable {
+    private final Queue<String> wpisy;
+    private final Queue<String> wspoldzielonaKolejka;
+
+    public Autor(Queue<String> wpisy, Queue<String> wspoldzielonaKolejka) {
+        this.wpisy = wpisy;
+        this.wspoldzielonaKolejka = wspoldzielonaKolejka;
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 3000)); // Losowy czas co 1-3 dni
+                synchronized (wspoldzielonaKolejka) {
+                    wspoldzielonaKolejka.addAll(wpisy);
+                    System.out.println("Autor opublikowal wpisy na blogu.");
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+
+class MiesiacZakonczeniePortalScheduler {
+    private final Queue<String> wspoldzielonaKolejka;
+
+    public MiesiacZakonczeniePortalScheduler(Queue<String> wspoldzielonaKolejka) {
+        this.wspoldzielonaKolejka = wspoldzielonaKolejka;
+    }
+
+    public void rozpocznij() {
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+        scheduler.scheduleAtFixedRate(() -> {
+            synchronized (wspoldzielonaKolejka) {
+                System.out.println("Koniec miesiąca! Ostatnie wpisy na blogu: " + wspoldzielonaKolejka);
+                wspoldzielonaKolejka.clear();
+            }
+        }, 0, 31, TimeUnit.SECONDS);
+    }
+}
+
+public class zad2c {
+    public static void main(String[] args) {
+        Queue<String> wspoldzielonaKolejka = new LinkedList<>();
+        Queue<String> wpisy = new LinkedList<>();
+        wpisy.add("Nowy post 1");
+        wpisy.add("Nowy post 2");
+
+        Autor autor = new Autor(wpisy, wspoldzielonaKolejka);
+        MiesiacZakonczeniePortalScheduler scheduler = new MiesiacZakonczeniePortalScheduler(wspoldzielonaKolejka);
+
+        Thread autorThread = new Thread(autor);
+        autorThread.start();
+        scheduler.rozpocznij();
+    }
+}
