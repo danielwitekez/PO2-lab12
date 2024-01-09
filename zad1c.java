@@ -52,7 +52,7 @@ class MiesiacZakonczenieSportScheduler {
     }
 }
 
-public class SportApp {
+public class zad1c {
     public static void main(String[] args) {
         List<String> wspoldzielonaLista = Collections.synchronizedList(new ArrayList<>());
         List<String> osiagniecia = Arrays.asList("Złoty medal", "Srebrny medal", "Rekord świata");
